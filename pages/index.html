@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bun Websocket Room Server</title>
+</head>
+<body>
+    <div id="messages"></div>
+    <button id="sendBtn">Send Message</button>
+</body>
+<script>
+    const socket = new WebSocket('ws://localhost:4000');
+
+    socket.onopen = async () => {
+        console.log('Connection opened');
+        const joinRoomMessage = JSON.stringify({
+            cmd: 'JOIN_ROOM',
+            roomId: 'myRoom',
+            data: '',
+        });
+        await socket.send(joinRoomMessage);
+    };
+
+    socket.onmessage = (event) => {
+        console.log('Message from server: ', event.data.toString());
+
+        // Display server messages on the page
+        const messages = document.getElementById('messages');
+        const message = document.createElement('p');
+        message.textContent = event.data;
+        messages.appendChild(message);
+    };
+
+    socket.onclose = () => {
+        console.log('Server connection closed');
+    };
+
+    // Send message to server when button is clicked
+    const sendBtn = document.getElementById('sendBtn');
+    sendBtn.addEventListener('click', function(){
+        const message = 'Hello from client!';
+        socket.send(JSON.stringify({cmd: "BROADCAST", roomId: 'myRoom', data: message}));
+        console.log('Message sent: ', message);
+    });
+</script>
+</html>

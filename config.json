@@ -1,0 +1,5 @@
+{
+  "port": 4000,
+  "hostname": "localhost",
+  "session_max_age": 3600
+}

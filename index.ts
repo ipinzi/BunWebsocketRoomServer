@@ -19,7 +19,7 @@ export const server = Bun.serve<WebSocketData>({
     port: config.port,
     fetch(req, server) {
 
-        let session = SyncSession(req); // Requested path
+        let session = SyncSession(req);
         // Response headers - A session cookie is added to connect the client with sessions on the server.
         const headers = {"Content-Type": "text/html; charset=utf-8", "Set-Cookie": session.cookie}
 
@@ -43,7 +43,7 @@ export const server = Bun.serve<WebSocketData>({
     websocket: {
         async open(ws){
             clients.add(ws);
-            console.log(`Websocket Server: Active at ${server.hostname}:${server.port}`);
+            console.log(`Client connected (ID: ${ws.data.session?.id})`);
         },
         // handler called when a message is received
         async message(ws, message) {
@@ -51,7 +51,7 @@ export const server = Bun.serve<WebSocketData>({
             commandInterpreter.Interpret(ws, message.toString());
         },
         async close(ws){
-            console.log(`${ws} client disconnected`)
+            console.log(`Client disconnected (ID: ${ws.data.session?.id})`)
             clients.delete(ws)
         }
     },

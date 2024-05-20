@@ -35,11 +35,11 @@ export class CommandInterpreter {
         // Your command logic here
         ws.data.roomId = roomId;
         rooms[roomId] = [...(rooms[roomId] || []), ws];
-        console.log(`Connection joined room: ${roomId}`);
+        console.log(`Connection (ID: ${ws.data.session?.id}) joined room: ${roomId}`);
     }
     LeaveRoom(ws: ServerWebSocket<WebSocketData>, roomId: string, data: string): void {
         rooms[roomId] = (rooms[roomId] || []).filter(socket => socket !== ws);
-        console.log(`Connection left room: ${roomId}`);
+        console.log(`Connection (ID: ${ws.data.session?.id}) left room: ${roomId}`);
     }
     Broadcast(ws: ServerWebSocket<WebSocketData>, roomId: string, data: string): void {
         clients.forEach(client => {
@@ -56,12 +56,13 @@ export class CommandInterpreter {
                 socket.send(data);
             }
         });
-        if(debug)console.log(`Broadcast message in room: ${roomId} message ${data}`);
+        if(debug)console.log(`Broadcast message in room: ${roomId} message: ${data}`);
         console.log(data.toString());
     }
     SendToConnection(ws: ServerWebSocket<WebSocketData>, roomId: string, data: string): void {
+        let obj = JSON.parse(data);
         if (ws.readyState === 1) {
-            ws.send(data);
+            obj.ws.send(data);
         }
         if(debug) console.log('Sent message to a specific connection');
     }

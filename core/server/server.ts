@@ -1,6 +1,7 @@
 import type {ServerWebSocket} from "bun";
 import {CommandInterpreter} from "./commandInterpreter.ts";
 import {SyncSession, Session} from "./session.ts";
+import debug from "../debug.ts";
 
 export interface WebSocketData {
     session?: Session;
@@ -52,15 +53,15 @@ class Server{
             websocket: {
                 async open(ws){
                     clients.add(ws);
-                    console.log(`Client connected (ID: ${ws.data.session?.id})`);
+                    debug.log(`Client connected (ID: ${ws.data.session?.id})`);
                 },
                 // handler called when a message is received
                 async message(ws, message) {
-                    //console.log(`Received: ${message}`);
+                    debug.log(`Received: ${message}`);
                     commandInterpreter.Interpret(ws, message.toString());
                 },
                 async close(ws){
-                    console.log(`Client disconnected (ID: ${ws.data.session?.id})`)
+                    debug.log(`Client disconnected (ID: ${ws.data.session?.id})`)
                     commandInterpreter.LeaveRoom(ws, ws.data.roomId as string, "");
                     clients.delete(ws)
                 }
@@ -68,6 +69,6 @@ class Server{
         });
     }
 }
-const server = new Server();
+export const server = new Server();
 
 export default server;

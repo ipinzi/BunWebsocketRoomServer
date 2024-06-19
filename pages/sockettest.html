@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bun Websocket Room Server</title>
+</head>
+<body>
+    <div id="messages"></div>
+    <button id="sendBtn">Send Message</button>
+</body>
+<script>
+
+    const ws = new WebSocket('ws://127.0.0.1:4000');
+    let requestCount = 0;
+    let startTime = Date.now();
+    const requestsPerSecondArray = [];
+    const testDurationSeconds = 10; // Run the test for 10 seconds
+
+    ws.onopen = function() {
+        console.log('WebSocket connection established');
+        sendMessages();
+    };
+
+    function sendMessages() {
+        if (ws.readyState === WebSocket.OPEN) {
+
+            ws.send(JSON.stringify({cmd: "BeginTest"}));
+            for(let i=0;i<50000;i++){
+                ws.send(JSON.stringify({i}));
+                requestCount++;
+            }
+            ws.send(JSON.stringify({cmd: "EndTest"}));
+            const currentTime = Date.now();
+            const elapsedTime = (currentTime - startTime) / 1000; // seconds
+            const requestsPerSecond = requestCount / elapsedTime;
+            requestsPerSecondArray.push(requestsPerSecond);
+            console.log(`Current Requests per Second: ${requestsPerSecond}`);
+        }
+    }
+
+    ws.onmessage = function(event) {
+        // Handle incoming messages if needed
+    };
+
+    ws.onclose = function() {
+        console.log('WebSocket connection closed');
+    };
+</script>
+</html>

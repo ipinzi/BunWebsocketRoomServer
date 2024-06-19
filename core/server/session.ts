@@ -1,4 +1,4 @@
-import config from './config.json';
+import config from '../../config.json';
 
 // Sets the maximum age of a session in seconds.
 let MAX_AGE = config.session_max_age // default max age.

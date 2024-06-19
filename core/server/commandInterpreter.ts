@@ -1,19 +1,27 @@
 import type {ServerWebSocket} from "bun";
-import {debug, rooms, server, clients, type WebSocketData} from "./index";
+import {rooms, clients, type WebSocketData} from "./server.ts";
+import {debug} from "../../main.ts";
 
 type ServerCommand = (ws: ServerWebSocket<WebSocketData>, roomId: string, data: string) => void;
 
 export class CommandInterpreter {
-    private commands: Map<string, ServerCommand>;
+    private commands = new Map<string, ServerCommand>();
+    private testBeginTime = 0;
     constructor() {
-        this.commands = new Map<string, ServerCommand>();
-
         // Load all commands here
         this.commands.set("JOIN_ROOM", this.JoinRoom);
         this.commands.set("LEAVE_ROOM", this.LeaveRoom);
         this.commands.set("BROADCAST", this.Broadcast);
         this.commands.set("BROADCAST_IN_ROOM", this.BroadcastInRoom);
         this.commands.set("SEND_TO_CONNECTION", this.SendToConnection);
+        this.commands.set("BeginTest", ()=>{
+            this.testBeginTime = Date.now();
+            console.log("Begin Test: "+this.testBeginTime);
+        })
+        this.commands.set("EndTest", ()=>{
+            console.log("End Test: "+Date.now());
+            console.log("Time to perform requests: "+(Date.now() - this.testBeginTime));
+        })
     }
 
     public Interpret(ws: ServerWebSocket<WebSocketData>, message: string): void {
@@ -26,13 +34,11 @@ export class CommandInterpreter {
         if (command) {
             command(ws, roomId, data);
         } else {
-            console.log(`Command ${cmd} not found`);
+           // console.log(`Command ${cmd} not found`);
         }
     }
 
     JoinRoom(ws: ServerWebSocket<WebSocketData>, roomId: string, data: string): void {
-        console.log('Executing JoinRoom');
-        // Your command logic here
         ws.data.roomId = roomId;
         rooms[roomId] = [...(rooms[roomId] || []), ws];
         console.log(`Connection (ID: ${ws.data.session?.id}) joined room: ${roomId}`);
